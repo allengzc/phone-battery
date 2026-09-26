@@ -14,9 +14,9 @@ jobs:
     name: Android APK
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@v6
         with:
           distribution: temurin
           java-version: '17'
@@ -27,7 +27,7 @@ jobs:
       - name: Build the APK
         run: ./android/build.sh
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: apk
           path: android/PhoneBatteryBLE.apk
@@ -37,7 +37,7 @@ jobs:
     name: macOS app
     runs-on: macos-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Build the app and the widget extension
         run: ./macos/build-app.sh
@@ -47,7 +47,7 @@ jobs:
           cd macos
           zip -qry ../PhoneBattery-macos-adhoc.zip PhoneBattery.app
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: macos-zip
           path: PhoneBattery-macos-adhoc.zip
@@ -60,9 +60,9 @@ jobs:
     permissions:
       contents: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           path: artifacts
           merge-multiple: true
