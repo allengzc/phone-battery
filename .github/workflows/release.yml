@@ -1,0 +1,81 @@
+name: Release
+
+# Pushing a tag like v1.0.0 builds both halves and publishes them as release
+# assets. The macOS build on a runner is ad-hoc signed (no identity available),
+# which is fine for the menu bar app and the desktop card; its widget extension
+# still needs re-signing with a real Team ID to appear in the widget gallery.
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+jobs:
+  android:
+    name: Android APK
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Fetch the Android SDK
+        run: ./scripts/setup-toolchains.sh
+
+      - name: Build the APK
+        run: ./android/build.sh
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: apk
+          path: android/PhoneBatteryBLE.apk
+          if-no-files-found: error
+
+  macos:
+    name: macOS app
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build the app and the widget extension
+        run: ./macos/build-app.sh
+
+      - name: Package
+        run: |
+          cd macos
+          zip -qry ../PhoneBattery-macos-adhoc.zip PhoneBattery.app
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: macos-zip
+          path: PhoneBattery-macos-adhoc.zip
+          if-no-files-found: error
+
+  publish:
+    name: Publish release
+    needs: [android, macos]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+          merge-multiple: true
+
+      - name: List what will be attached
+        run: ls -la artifacts
+
+      - name: Create the release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" \
+            --title "$GITHUB_REF_NAME" \
+            --notes-file .github/release-notes.md \
+            artifacts/PhoneBatteryBLE.apk \
+            artifacts/PhoneBattery-macos-adhoc.zip

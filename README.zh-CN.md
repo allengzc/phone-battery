@@ -1,5 +1,7 @@
 # 在 macOS 上显示手机电量
 
+[![CI](https://github.com/allengzc/phone-battery/actions/workflows/ci.yml/badge.svg)](https://github.com/allengzc/phone-battery/actions/workflows/ci.yml)
+
 把安卓手机的电量显示到 Mac 上 —— **菜单栏**、**桌面卡片**，以及真正的 **WidgetKit 小组件**。**全程只走蓝牙。**
 
 不需要同一个局域网、不需要云端账号、不需要后台服务、不需要 Gradle。
@@ -8,6 +10,27 @@
   <img src="docs/images/widget-medium-dark.png" width="390" alt="小组件 深色">
   <img src="docs/images/widget-small-light.png" width="175" alt="小组件 浅色">
 </p>
+
+---
+
+## 安装
+
+从 [最新 release](../../releases/latest) 下载两个文件。
+
+**1. 手机端** —— `PhoneBatteryBLE.apk`
+
+侧载安装、打开、授予蓝牙权限，让它保持运行。
+
+**2. Mac 端** —— `PhoneBattery-macos-adhoc.zip`（ad-hoc 签名，需要去掉隔离标记）
+
+```sh
+unzip PhoneBattery-macos-adhoc.zip
+xattr -cr PhoneBattery.app
+cp -R PhoneBattery.app /Applications/
+open /Applications/PhoneBattery.app
+```
+
+菜单栏和桌面卡片立刻可用。**但这份构建里的小组件不会出现在小组件库中** —— macOS 要求小组件扩展必须有真实 Team ID，而 ad-hoc 签名没有。用你自己的 Apple ID 证书重签，或者[本地构建](#构建)。细节见[签名](#签名)和[踩过的坑](#踩过的坑全部靠读日志才定位到)。
 
 ---
 

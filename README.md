@@ -1,5 +1,7 @@
 # Phone Battery on macOS
 
+[![CI](https://github.com/allengzc/phone-battery/actions/workflows/ci.yml/badge.svg)](https://github.com/allengzc/phone-battery/actions/workflows/ci.yml)
+
 Show an Android phone's battery on a Mac — in the **menu bar**, as a **desktop
 card**, and as a real **WidgetKit widget** — over **Bluetooth only**.
 
@@ -9,6 +11,32 @@ No shared Wi‑Fi. No cloud account. No companion service. No Gradle.
   <img src="docs/images/widget-medium-dark.png" width="390" alt="Widget, dark mode">
   <img src="docs/images/widget-small-light.png" width="175" alt="Widget, light mode">
 </p>
+
+---
+
+## Install
+
+Download both halves from the [latest release](../../releases/latest).
+
+**1. The phone app** — `PhoneBatteryBLE.apk`
+
+Sideload it, open it, grant the Bluetooth permission, and leave it running.
+
+**2. The Mac app** — `PhoneBattery-macos-adhoc.zip` (ad-hoc signed, so clear the
+quarantine flag):
+
+```sh
+unzip PhoneBattery-macos-adhoc.zip
+xattr -cr PhoneBattery.app
+cp -R PhoneBattery.app /Applications/
+open /Applications/PhoneBattery.app
+```
+
+The menu bar item and the desktop card work immediately. **The widget from this
+build will not appear in the widget gallery**, because macOS requires a widget
+extension to carry a real Team ID and an ad-hoc signature has none — re-sign it
+with your own Apple ID certificate, or [build locally](#build). See
+[Signing](#signing) and [Hard-won gotchas](#hard-won-gotchas).
 
 ---
 

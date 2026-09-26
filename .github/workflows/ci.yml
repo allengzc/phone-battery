@@ -1,0 +1,66 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  android:
+    name: Android APK
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # JDK 17, not 21: build-tools 34's R8 cannot read anonymous inner classes
+      # compiled by javac 21 (see android/build.sh).
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Fetch the Android SDK
+        run: ./scripts/setup-toolchains.sh
+
+      # Fail here with a clear message rather than deep inside the build.
+      - name: Verify aapt2 runs
+        run: android/sdk/build-tools/34.0.0/aapt2 version
+
+      - name: Build the APK
+        run: ./android/build.sh
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: PhoneBatteryBLE-apk
+          path: android/PhoneBatteryBLE.apk
+          if-no-files-found: error
+
+  macos:
+    name: macOS app + widget extension
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # No signing identity on a runner, so build-app.sh falls back to ad-hoc and
+      # says so. That is enough to prove the app and the widget extension compile,
+      # link and are structured correctly; the widget only becomes visible to the
+      # system when signed with a real Team ID (see the README).
+      - name: Build the app and the widget extension
+        run: ./macos/build-app.sh
+
+      - name: Confirm the extension links NSExtensionMain
+        run: |
+          nm -u macos/PhoneBattery.app/Contents/PlugIns/PhoneBatteryWidget.appex/Contents/MacOS/PhoneBatteryWidget \
+            | grep -q _NSExtensionMain
+          echo "widget extension entry point is correct"
+
+      - name: Render the widget design
+        continue-on-error: true
+        run: ./macos/render-widget-preview.sh
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: widget-previews
+          path: macos/preview/*.png
+          if-no-files-found: ignore

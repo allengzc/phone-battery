@@ -30,7 +30,10 @@ ANDROID_JAR="$SDK/platforms/android-34/android.jar"
 # read — it dies with "NullPointerException: String.length() ... <parameter1>
 # is null" on BatteryGattService$3.class. Same source, same class-file major
 # version 52; JDK 17's javac → d8 succeeds.
-if [ -z "${JAVA_HOME:-}" ]; then
+#
+# /usr/libexec/java_home is macOS-only, so on any other platform (CI runs this on
+# Linux) the caller's JAVA_HOME / PATH is used as-is.
+if [ -z "${JAVA_HOME:-}" ] && [ -x /usr/libexec/java_home ]; then
   for v in 17 11; do
     candidate="$(/usr/libexec/java_home -v "$v" 2>/dev/null || true)"
     if [ -n "$candidate" ] && [ -x "$candidate/bin/javac" ]; then
@@ -40,9 +43,13 @@ if [ -z "${JAVA_HOME:-}" ]; then
   done
   JAVA_HOME="${JAVA_HOME:-$(/usr/libexec/java_home 2>/dev/null || true)}"
 fi
-export JAVA_HOME
-export PATH="$BUILD_TOOLS:$JAVA_HOME/bin:$PATH"
-echo "using JDK: $JAVA_HOME"
+if [ -n "${JAVA_HOME:-}" ]; then
+  export JAVA_HOME
+  export PATH="$BUILD_TOOLS:$JAVA_HOME/bin:$PATH"
+else
+  export PATH="$BUILD_TOOLS:$PATH"
+fi
+echo "using JDK: ${JAVA_HOME:-<from PATH>: $(command -v javac || echo none)}"
 
 for tool in aapt2 d8 zipalign apksigner keytool javac; do
   command -v "$tool" >/dev/null || { echo "missing tool: $tool (looked in $BUILD_TOOLS and $JAVA_HOME/bin)" >&2; exit 1; }
