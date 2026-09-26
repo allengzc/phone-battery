@@ -1,0 +1,23 @@
+# Build output
+android/PhoneBatteryBLE.apk
+android/PhoneBatteryBLE.apk.idsig
+android/build/
+macos/PhoneBattery.app/
+macos/preview/
+
+# Build caches (swift module caches land at any level)
+.cache/
+
+# Toolchains fetched by scripts/setup-toolchains.sh
+android/sdk/
+android/.android/
+platform-tools/
+.adbhome/
+
+# Local signing material
+android/debug.keystore
+*.keystore
+*.p12
+certs/
+
+.DS_Store

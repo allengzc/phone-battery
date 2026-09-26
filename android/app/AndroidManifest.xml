@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Phone Battery (BLE) — advertises this phone as a standard Bluetooth LE
+  peripheral exposing the Battery Service (0x180F) with a live Battery Level
+  characteristic (0x2A19), so a Mac can read it with the same code path it uses
+  for AirPods and BLE accessories.
+
+  Sideload-only personal app: targetSdk 34, no network, no analytics, no
+  storage. It only serves a GATT attribute and runs a foreground service.
+-->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.dsh.phonebattery">
+
+    <!-- Legacy Bluetooth permissions (Android 11 and older). -->
+    <uses-permission android:name="android.permission.BLUETOOTH" android:maxSdkVersion="30" />
+    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" android:maxSdkVersion="30" />
+
+    <!-- Runtime Bluetooth permissions (Android 12+): advertise + serve a GATT server. -->
+    <uses-permission android:name="android.permission.BLUETOOTH_ADVERTISE" />
+    <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
+
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_CONNECTED_DEVICE" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+
+    <uses-feature android:name="android.hardware.bluetooth_le" android:required="true" />
+
+    <application
+        android:label="@string/app_name"
+        android:icon="@drawable/ic_launcher"
+        android:allowBackup="false"
+        android:supportsRtl="true">
+
+        <activity
+            android:name=".MainActivity"
+            android:exported="true"
+            android:label="@string/app_name">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <service
+            android:name=".BatteryGattService"
+            android:exported="false"
+            android:foregroundServiceType="connectedDevice" />
+    </application>
+</manifest>
